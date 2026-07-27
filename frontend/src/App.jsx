@@ -6,7 +6,7 @@ import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-
+import Success from './pages/Success';
 function App() {
   return (
     <Router>
@@ -23,12 +23,16 @@ function App() {
                 </ProtectedRoute>
               }
             />
-
-            {/* Public authentication routes */}
+            <Route
+              path="/success"
+              element={
+                <ProtectedRoute>
+                  <Success />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-
-            {/* Fallback route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
@@ -36,5 +40,4 @@ function App() {
     </Router>
   );
 }
-
 export default App;

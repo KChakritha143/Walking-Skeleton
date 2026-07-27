@@ -1,37 +1,28 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-
 const AuthContext = createContext(null);
-
 let baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 if (baseUrl && !baseUrl.endsWith('/api') && !baseUrl.endsWith('/api/')) {
   baseUrl = baseUrl.replace(/\/$/, '') + '/api';
 }
 export const API_BASE_URL = baseUrl;
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Synchronize token verification on initial load
   useEffect(() => {
     const initializeAuth = async () => {
       if (token) {
         try {
-          // Verify token validity by calling a lightweight tasks or status request,
-          // or parse details from localstorage.
-          // In a production app we could fetch user profile, but here we can inspect and decode the JWT or check status.
-          // Let's decode client-side to verify if it is expired.
           const payload = parseJwt(token);
           if (payload && payload.exp * 1000 > Date.now()) {
             setUser({
               id: payload.id,
               name: payload.name,
-              email: payload.email
+              email: payload.email,
+              isPro: payload.isPro
             });
           } else {
-            // Token expired
             logout();
           }
         } catch (err) {
@@ -41,11 +32,8 @@ export const AuthProvider = ({ children }) => {
       }
       setLoading(false);
     };
-
     initializeAuth();
   }, [token]);
-
-  // Client-side helper to decode JWT
   const parseJwt = (t) => {
     try {
       const base64Url = t.split('.')[1];
@@ -62,8 +50,6 @@ export const AuthProvider = ({ children }) => {
       return null;
     }
   };
-
-  // Register action
   const register = async (name, email, password) => {
     setLoading(true);
     setError(null);
@@ -75,13 +61,10 @@ export const AuthProvider = ({ children }) => {
         },
         body: JSON.stringify({ name, email, password }),
       });
-
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.message || 'Registration failed');
       }
-
       localStorage.setItem('token', data.token);
       setToken(data.token);
       setUser(data.user);
@@ -93,9 +76,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
-
-  // Login action
-  const login = async (email, password) => {
+    const login = async (email, password) => {
     setLoading(true);
     setError(null);
     try {
@@ -106,13 +87,10 @@ export const AuthProvider = ({ children }) => {
         },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
       }
-
       localStorage.setItem('token', data.token);
       setToken(data.token);
       setUser(data.user);
@@ -124,42 +102,35 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
-
-  // Logout action
-  const logout = () => {
+    const logout = () => {
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
     setError(null);
   };
-
-  // Helper to make authenticated fetch requests
-  const authFetch = async (url, options = {}) => {
+  const upgradeUser = (isProStatus) => {
+    setUser(prev => prev ? { ...prev, isPro: isProStatus } : null);
+  };
+    const authFetch = async (url, options = {}) => {
     const headers = {
       'Content-Type': 'application/json',
       ...options.headers,
     };
-
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
-
     try {
       const response = await fetch(url, { ...options, headers });
-      
-      // Auto-intercept 401 Unauthorized errors (expired or invalid token)
       if (response.status === 401) {
         console.warn('API returned 401 Unauthorized. Directing to logout.');
         logout();
         throw new Error('Session expired. Please log in again.');
       }
-
       return response;
     } catch (err) {
       throw err;
     }
   };
-
   return (
     <AuthContext.Provider
       value={{
@@ -171,6 +142,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         authFetch,
+        upgradeUser,
         clearError: () => setError(null)
       }}
     >
@@ -178,7 +150,6 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

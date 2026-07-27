@@ -2,37 +2,24 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { connectDB } = require('./config/db');
-
 const app = express();
-
-// Connect to Database
 connectDB();
-
-// Middleware
 app.use(cors({
-  origin: '*', // Allow all origins in development
+  origin: '*', 
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
 app.use(express.json());
-
-// Request logger for debugging auth requests
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
 });
-
-// Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/tasks', require('./routes/tasks'));
-
-// Root Status check
+app.use('/api/payments', require('./routes/payments'));
 app.get('/api/status', (req, res) => {
   res.json({ status: 'API is running securely', time: new Date() });
 });
-
-// Friendly root guide
 app.get('/', (req, res) => {
   res.send(`
     <html>
@@ -49,7 +36,7 @@ app.get('/', (req, res) => {
       </head>
       <body>
         <div class="card">
-          <h2>Backend API Server is Running! 🚀</h2>
+          <h2>Backend API Server is Running! </h2>
           <p>This is the backend server running on port <strong>5000</strong>.</p>
           <p>To view the website interface, please open the frontend URL:</p>
           <p><a href="http://localhost:5173" target="_blank" style="font-size: 1.2em;">http://localhost:5173</a></p>
@@ -59,28 +46,20 @@ app.get('/', (req, res) => {
     </html>
   `);
 });
-
-// Redirect any other non-API routes to the root guide
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) {
     return next();
   }
   res.redirect('/');
 });
-
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: 'Internal server error occurred' });
 });
-
-// Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
   console.error(`Unhandled Rejection Error: ${err.message}`);
 });
-
 const PORT = process.env.PORT || 5000;
-
 app.listen(PORT, () => {
   console.log(`Security Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
   console.log(`Backend API URL: http://localhost:${PORT}`);
