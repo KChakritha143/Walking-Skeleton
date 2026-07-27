@@ -1,98 +1,73 @@
-# Waling-Skeleton
-# Secure Authentication & JWT Integration
+# REST API CRUD Finalization & Gateway Monetization
 
 ## Project Overview
 
-This project is a full-stack authentication system built using React, Node.js, Express, and MongoDB. It provides secure user registration and login functionality using bcryptjs for password hashing and JSON Web Tokens (JWT) for authentication.
+This project is a full-stack application built using:
 
-The application allows users to register, log in, access protected routes, and manage tasks through authenticated API requests.
+- React (Vite) Frontend
+- Node.js & Express Backend
+- MongoDB Atlas Database
+- JWT Authentication
+- Bcrypt Password Hashing
+- Protected CRUD Operations
+- Stripe Checkout Integration (Test Mode)
+
+The application allows authenticated users to manage their own resources securely through JWT-protected REST APIs while demonstrating ownership validation and payment gateway integration.
+
+---
 
 ## Tech Stack
 
 ### Frontend
-- React
+- React.js
 - Vite
-- React Router DOM
+- React Context API
 - Axios
-- Context API
+- React Router DOM
 
 ### Backend
 - Node.js
 - Express.js
-- MongoDB
+- MongoDB Atlas
 - Mongoose
+- JWT (jsonwebtoken)
 - bcryptjs
-- JSON Web Token (JWT)
+- CORS
 - dotenv
-- cors
+- 
+## Project Structure
 
-## Folder Structure
-
-```text
-MISSION-13
+```
+MISSION-15
 │
 ├── backend
 │   ├── config
 │   ├── data
 │   ├── middleware
-│   │   └── auth.js
-│   │
 │   ├── models
-│   │   ├── User.js
-│   │   └── Task.js
-│   │
 │   ├── routes
-│   │   ├── auth.js
-│   │   └── tasks.js
-│   │
 │   ├── tests
-│   │   └── verify-auth.js
-│   │
 │   ├── .env
-│   ├── .gitignore
-│   ├── package.json
-│   ├── package-lock.json
-│   └── server.js
+│   ├── server.js
+│   └── package.json
 │
 ├── frontend
 │   ├── public
-│   │
 │   ├── src
 │   │   ├── assets
-│   │   │   ├── hero.png
-│   │   │   ├── react.svg
-│   │   │   └── vite.svg
-│   │   │
 │   │   ├── components
-│   │   │   ├── Navbar.jsx
-│   │   │   └── ProtectedRoute.jsx
-│   │   │
 │   │   ├── context
-│   │   │   └── AuthContext.jsx
-│   │   │
 │   │   ├── pages
-│   │   │   ├── Dashboard.jsx
-│   │   │   ├── Login.jsx
-│   │   │   └── Register.jsx
-│   │   │
 │   │   ├── App.jsx
-│   │   ├── App.css
-│   │   ├── index.css
 │   │   └── main.jsx
-│   │
-│   ├── .gitignore
-│   ├── eslint.config.js
 │   ├── index.html
-│   ├── package.json
-│   ├── package-lock.json
-│   ├── README.md
-│   └── vite.config.js
+│   ├── vite.config.js
+│   └── package.json
 │
-├── node_modules
-├── package.json
-├── package-lock.json
-└── .gitignore
+└── README.md
 ```
+
+---
 
 ## Features
 
@@ -100,92 +75,265 @@ MISSION-13
 
 - User Registration
 - User Login
-- Logout Functionality
 - JWT Token Generation
-- JWT Verification
 - Protected Routes
+- Password Hashing using bcryptjs
 
-### Security
+### Secure CRUD Operations
 
-- Password Hashing with bcryptjs
-- Secure Authentication using JWT
-- Authorization Middleware
-- Token Validation
-- Protected API Endpoints
+Authenticated users can:
 
-### Task Management
+- Create Resources
+- Read Their Own Resources
+- Update Their Own Resources
+- Delete Their Own Resources
 
-- Create Tasks
-- View Tasks
-- Update Tasks
-- Protected Task Operations
+### Ownership Validation
 
-## Authentication Flow
+Every resource contains:
 
-### Registration
+```js
+authorId
+```
 
-1. User enters name, email, and password.
-2. Password is hashed using bcryptjs.
-3. User information is stored in MongoDB.
-4. Registration completes successfully.
+Before any Read, Update, or Delete operation:
 
-### Login
+```js
+if (resource.authorId.toString() !== req.user.id) {
+    return res.status(403).json({
+        message: "Access Denied"
+    });
+}
+```
 
-1. User enters email and password.
-2. Server verifies credentials.
-3. JWT token is generated.
-4. Token is returned to the client.
-5. Token is stored in localStorage.
+This ensures users can only access their own data.
 
-### Authorization
+---
 
-1. User requests protected resources.
-2. JWT token is sent in request headers.
-3. Middleware validates token.
-4. Access is granted only if the token is valid.
+## REST API Endpoints
 
-## API Endpoints
+### Authentication
 
-### Register User
+#### Register User
 
 ```http
 POST /api/auth/register
 ```
 
-### Login User
+Request Body:
+
+```json
+{
+  "name": "John",
+  "email": "john@example.com",
+  "password": "123456"
+}
+```
+
+---
+
+#### Login User
 
 ```http
 POST /api/auth/login
 ```
 
-### Get Tasks
+Request Body:
 
-```http
-GET /api/tasks
+```json
+{
+  "email": "john@example.com",
+  "password": "123456"
+}
 ```
 
-### Create Task
+Response:
+
+```json
+{
+  "token": "JWT_TOKEN"
+}
+```
+
+---
+
+### Resource CRUD
+
+#### Create Resource
 
 ```http
 POST /api/tasks
 ```
 
-### Update Task
+Headers:
+
+```http
+Authorization: Bearer TOKEN
+```
+
+---
+
+#### Get All User Resources
+
+```http
+GET /api/tasks
+```
+
+Headers:
+
+```http
+Authorization: Bearer TOKEN
+```
+
+---
+
+#### Get Single Resource
+
+```http
+GET /api/tasks/:id
+```
+
+Headers:
+
+```http
+Authorization: Bearer TOKEN
+```
+
+---
+
+#### Update Resource
 
 ```http
 PUT /api/tasks/:id
 ```
 
+Headers:
+
+```http
+Authorization: Bearer TOKEN
+```
+
+---
+
+#### Delete Resource
+
+```http
+DELETE /api/tasks/:id
+```
+
+Headers:
+
+```http
+Authorization: Bearer TOKEN
+```
+
+---
+
+## JWT Middleware
+
+Protected routes use authentication middleware.
+
+Example:
+
+```js
+router.get("/", protect, getTasks);
+```
+
+Middleware Flow:
+
+1. Read token from Authorization header
+2. Verify token using JWT Secret
+3. Decode user information
+4. Attach user to request object
+5. Allow access to protected route
+
+---
+
+## Frontend Integration
+
+The React frontend communicates with backend APIs using Axios.
+
+Example:
+
+```js
+axios.get("/api/tasks", {
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
+});
+```
+
+---
+
+## Optimistic UI Implementation
+
+When a task is deleted:
+
+1. Remove task instantly from UI state.
+2. Send DELETE request in background.
+3. No page reload required.
+4. Improved user experience.
+
+Example:
+
+```js
+setTasks(tasks.filter(task => task._id !== id));
+
+await axios.delete(`/api/tasks/${id}`);
+```
+
+---
+
+## Stripe Payment Integration
+
+### Test Mode Checkout
+
+Users can initiate a Stripe checkout session.
+
+Example Use Cases:
+
+- Upgrade to Pro
+- Purchase Course
+- Premium Membership
+
+---
+
+### Create Checkout Session
+
+```http
+POST /api/payment/create-checkout-session
+```
+
+---
+
+### Stripe Flow
+
+1. User clicks Upgrade Button.
+2. Frontend calls Checkout API.
+3. Backend creates Stripe Session.
+4. User redirected to Stripe Checkout.
+5. Test payment processed.
+6. Redirect to Success Page.
+
+---
+
 ## Environment Variables
 
-Create a `.env` file inside the backend folder.
+### Backend (.env)
 
 ```env
 PORT=5000
+
 MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_secret_key
-NODE_ENV=development
+
+JWT_SECRET=your_jwt_secret
+
+STRIPE_SECRET_KEY=your_stripe_secret_key
+
+CLIENT_URL=http://localhost:5173
 ```
+
+---
 
 ## Installation
 
@@ -195,89 +343,112 @@ NODE_ENV=development
 git clone <repository-url>
 ```
 
-### Install Dependencies
+---
 
-Root Folder
-
-```bash
-npm install
-```
-
-Backend
+### Backend Setup
 
 ```bash
 cd backend
+
 npm install
-```
 
-Frontend
-
-```bash
-cd frontend
-npm install
-```
-
-## Running the Project
-
-### Start Backend
-
-```bash
-cd backend
 npm start
 ```
 
-Backend URL
+Server runs at:
 
-```text
+```bash
 http://localhost:5000
 ```
 
-### Start Frontend
+---
+
+### Frontend Setup
 
 ```bash
 cd frontend
+
+npm install
+
 npm run dev
 ```
 
-Frontend URL
+Frontend runs at:
 
-```text
+```bash
 http://localhost:5173
 ```
 
-## Live deployment
+---
 
-Froentend : https://waling-skeleton.vercel.app/login
-Backend : 
 ## Testing
 
-Authentication routes can be tested using:
-
-- Postman
-- Thunder Client
-- Browser Developer Tools
-
-Test cases:
+### Authentication Testing
 
 - Register User
 - Login User
-- Generate JWT
-- Access Protected Route
-- Create Task
-- Update Task
-- Logout User
+- Verify JWT Token
+
+### CRUD Testing
+
+- Create Resource
+- Read Resource
+- Update Resource
+- Delete Resource
+
+### Ownership Validation Testing
+
+- Login as User A
+- Attempt to access User B's resource
+- Verify 403 Forbidden response
+
+---
+
+## Security Measures
+
+- JWT Authentication
+- Password Hashing with bcryptjs
+- Protected API Routes
+- Ownership Validation
+- Environment Variables
+- CORS Configuration
+- MongoDB Atlas Secure Connection
+
+---
+
+## Deployment
+
+### Frontend
+
+Deploy using:
+
+- Vercel
+- Netlify
+
+### Backend
+
+Deploy using:
+
+- Render
+- Railway
+
+### Database
+
+- MongoDB Atlas
+
+---
 
 ## Learning Outcomes
 
-Through this project I learned:
+Through this project:
 
-- MongoDB Data Modeling
-- Express API Development
-- Password Hashing using bcryptjs
-- JWT Authentication
-- Middleware Development
-- React Authentication Flow
-- Protected Routes
-- Context API State Management
-- Frontend and Backend Integration
+- Built secure REST APIs using Express
+- Implemented JWT Authentication
+- Applied Role-Based Data Ownership
+- Connected React Frontend with Backend APIs
+- Implemented Optimistic UI Updates
+- Integrated Stripe Payment Gateway
+- Worked with MongoDB Atlas
+- Deployed Full-Stack Applications
 
+---
