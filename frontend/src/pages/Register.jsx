@@ -52,10 +52,55 @@ const Register = () => {
   };
 
   return (
-    <div className="auth-page">
+  <div className="auth-page">
+
+    {/* Left Section */}
+    <div className="auth-branding">
+      <div className="auth-badge">
+        🚀 Smart Project Management
+      </div>
+
+      <h1>TaskMatrix</h1>
+
+      <p>
+        Manage projects, organize tasks, collaborate with your team,
+        and boost productivity from one powerful workspace.
+      </p>
+
+      <ul className="auth-features">
+        <li>🚀 Unlimited Projects</li>
+        <li>📋 Task Management</li>
+        <li>👥 Team Collaboration</li>
+        <li>📊 Productivity Analytics</li>
+        <li>🔒 Secure Authentication</li>
+      </ul>
+
+      <div className="auth-stats">
+        <div>
+          <h3>5K+</h3>
+          <span>Users</span>
+        </div>
+
+        <div>
+          <h3>1200+</h3>
+          <span>Projects</span>
+        </div>
+
+        <div>
+          <h3>99.9%</h3>
+          <span>Uptime</span>
+        </div>
+      </div>
+    </div>
+
+    {/* Right Section */}
+    <div className="auth-form-wrapper">
       <div className="glass-panel">
+
         <h2>Create Account</h2>
-        <p className="subtitle">Register to unlock your private tasks dashboard</p>
+        <p className="subtitle">
+          Start managing your projects today.
+        </p>
 
         {validationError && (
           <div className="alert alert-error">
@@ -72,6 +117,7 @@ const Register = () => {
         )}
 
         <form onSubmit={handleSubmit}>
+
           <div className="form-group">
             <label htmlFor="name">Full Name</label>
             <div className="input-container">
@@ -79,7 +125,7 @@ const Register = () => {
                 id="name"
                 type="text"
                 className="form-input"
-                placeholder="John Doe"
+                placeholder="Enter your full name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -95,7 +141,7 @@ const Register = () => {
                 id="email"
                 type="email"
                 className="form-input"
-                placeholder="you@example.com"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -111,7 +157,7 @@ const Register = () => {
                 id="password"
                 type="password"
                 className="form-input"
-                placeholder="Min 6 characters"
+                placeholder="Minimum 6 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -121,32 +167,48 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
+            <label htmlFor="confirmPassword">
+              Confirm Password
+            </label>
             <div className="input-container">
               <input
                 id="confirmPassword"
                 type="password"
                 className="form-input"
-                placeholder="Re-enter password"
+                placeholder="Confirm password"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) =>
+                  setConfirmPassword(e.target.value)
+                }
                 required
               />
               <Lock />
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
-            Register Account
+          <button
+            type="submit"
+            className="btn btn-primary"
+            style={{
+              width: "100%",
+              marginTop: "1rem"
+            }}
+          >
+            Create Account
           </button>
+
         </form>
 
         <div className="auth-footer">
-          Already have an account? <Link to="/login">Sign In</Link>
+          Already have an account?{" "}
+          <Link to="/login">Sign In</Link>
         </div>
+
       </div>
     </div>
-  );
+
+  </div>
+);
 };
 
 export default Register;

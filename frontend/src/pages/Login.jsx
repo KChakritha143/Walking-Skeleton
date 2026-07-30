@@ -43,10 +43,53 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-page">
+  <div className="auth-page">
+
+    <div className="auth-branding">
+      <div className="auth-badge">
+        🚀 Welcome Back
+      </div>
+
+      <h1>TaskMatrix</h1>
+
+      <p>
+        Organize projects, collaborate with teams,
+        and manage tasks efficiently from one place.
+      </p>
+
+      <ul className="auth-features">
+        <li>🚀 Unlimited Projects</li>
+        <li>📋 Task Management</li>
+        <li>👥 Team Collaboration</li>
+        <li>📊 Productivity Analytics</li>
+        <li>🔒 Secure Authentication</li>
+      </ul>
+
+      <div className="auth-stats">
+        <div>
+          <h3>5K+</h3>
+          <span>Users</span>
+        </div>
+
+        <div>
+          <h3>1200+</h3>
+          <span>Projects</span>
+        </div>
+
+        <div>
+          <h3>99.9%</h3>
+          <span>Uptime</span>
+        </div>
+      </div>
+    </div>
+
+    <div className="auth-form-wrapper">
       <div className="glass-panel">
+
         <h2>Welcome Back</h2>
-        <p className="subtitle">Securely log in to access your protected dashboard</p>
+        <p className="subtitle">
+          Securely log in to access your dashboard.
+        </p>
 
         {validationError && (
           <div className="alert alert-error">
@@ -64,13 +107,12 @@ const Login = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="email">Email Address</label>
+            <label>Email Address</label>
             <div className="input-container">
               <input
-                id="email"
                 type="email"
                 className="form-input"
-                placeholder="you@example.com"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -80,13 +122,12 @@ const Login = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label>Password</label>
             <div className="input-container">
               <input
-                id="password"
                 type="password"
                 className="form-input"
-                placeholder="••••••••"
+                placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -95,17 +136,20 @@ const Login = () => {
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
+          <button type="submit" className="btn-primary">
             Sign In
           </button>
         </form>
 
         <div className="auth-footer">
-          Don't have an account? <Link to="/register">Create an account</Link>
+          Don't have an account?{" "}
+          <Link to="/register">Create Account</Link>
         </div>
+
       </div>
     </div>
-  );
-};
 
+  </div>
+);
+};
 export default Login;

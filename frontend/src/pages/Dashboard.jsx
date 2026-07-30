@@ -125,6 +125,19 @@ const Dashboard = () => {
     const date = new Date(dateString);
     return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
   };
+  const totalTasks = tasks.length;
+
+  const completedTasks = tasks.filter(
+    task => task.completed
+  ).length;
+
+  const pendingTasks = tasks.filter(
+    task => !task.completed
+  ).length;
+
+  const highPriorityTasks = tasks.filter(
+    task => task.priority === "high"
+  ).length;
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
@@ -135,6 +148,29 @@ const Dashboard = () => {
           </p>
         </div>
       </div>
+      <div className="stats-grid">
+
+  <div className="stat-card">
+    <h4>Total Tasks</h4>
+    <span>{totalTasks}</span>
+  </div>
+
+  <div className="stat-card pending">
+    <h4>Pending</h4>
+    <span>{pendingTasks}</span>
+  </div>
+
+  <div className="stat-card completed">
+    <h4>Completed</h4>
+    <span>{completedTasks}</span>
+  </div>
+
+  <div className="stat-card high">
+    <h4>High Priority</h4>
+    <span>{highPriorityTasks}</span>
+  </div>
+
+</div>
       {actionError && (
         <div className="alert alert-error" style={{ marginBottom: '1.5rem' }}>
           <AlertCircle size={18} />
@@ -294,19 +330,14 @@ const Dashboard = () => {
             {tasks.map((task) => (
               <div key={task._id} className={`task-card ${task.completed ? 'completed' : ''}`}>
                 <div className="task-card-content">
-                  <div className="task-checkbox-container">
+                 <div className="task-checkbox-container">
                     <button
-                      type="button"
                       onClick={() => handleToggleComplete(task)}
-                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                      className={`task-status-btn ${task.completed ? "completed-btn" : ""}`}
                     >
-                      {task.completed ? (
-                        <CheckSquare size={20} color="var(--status-success)" />
-                      ) : (
-                        <Square size={20} color="var(--text-muted)" />
-                      )}
+                    {task.completed ? "Completed ✓" : "Mark Complete"}
                     </button>
-                  </div>                  
+                  </div>                 
                   <div className="task-details">
                     <span className="task-title">{task.title}</span>
                     {task.description && <span className="task-desc">{task.description}</span>}
