@@ -457,5 +457,5 @@ Through this project:
 
 ## Deployment Links
 
-- Frontend(Vercel) : https://walking-skeleton-s4bd.vercel.app/login
+- Frontend(Vercel) : https://walking-skeleton-s4bd.vercel.app/
 - Backend(Render) :  https://walking-skeleton-1.onrender.com
