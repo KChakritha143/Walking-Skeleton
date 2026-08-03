@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth, API_BASE_URL } from '../context/AuthContext';
-import { Plus, Trash2, Calendar, CheckSquare, Square, AlertCircle, ListTodo } from 'lucide-react';
+import { Plus, Trash2, Calendar, CheckSquare, Square, AlertCircle, ListTodo, Sparkles, Loader2 } from 'lucide-react';
 const Dashboard = () => {
   const { user, authFetch } = useAuth();
   const [tasks, setTasks] = useState([]);
@@ -11,6 +11,106 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [actionError, setActionError] = useState('');
   const [actionSuccess, setActionSuccess] = useState('');
+
+  // AI Integration state
+  const [aiLoadingTaskId, setAiLoadingTaskId] = useState(null);
+  const [formAiLoading, setFormAiLoading] = useState(false);
+
+  // Generate suggestions for an existing task
+  const handleGenerateSubtasks = async (task) => {
+    setActionError('');
+    setActionSuccess('');
+    setAiLoadingTaskId(task._id);
+    try {
+      const response = await authFetch(`${API_BASE_URL}/ai/suggest`, {
+        method: 'POST',
+        body: JSON.stringify({
+          title: task.title,
+          description: task.description || ''
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch suggestions');
+      }
+
+      // Save generated subtasks directly into MongoDB
+      const saveResponse = await authFetch(`${API_BASE_URL}/tasks/${task._id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          subtasks: data.suggestions
+        })
+      });
+      const savedData = await saveResponse.json();
+      if (!saveResponse.ok) {
+        throw new Error(savedData.message || 'Failed to save subtasks');
+      }
+
+      setTasks(tasks.map(t => t._id === task._id ? savedData : t));
+      setActionSuccess('AI subtasks generated successfully!');
+      setTimeout(() => setActionSuccess(''), 3000);
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setAiLoadingTaskId(null);
+    }
+  };
+
+  // Toggle state of a subtask
+  const handleToggleSubtask = async (task, subtaskIndex) => {
+    setActionError('');
+    try {
+      const updatedSubtasks = task.subtasks.map((sub, idx) => 
+        idx === subtaskIndex ? { ...sub, completed: !sub.completed } : sub
+      );
+
+      const response = await authFetch(`${API_BASE_URL}/tasks/${task._id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          subtasks: updatedSubtasks
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to update subtask');
+      }
+      setTasks(tasks.map(t => t._id === task._id ? data : t));
+    } catch (err) {
+      setActionError(err.message);
+    }
+  };
+
+  // Generate suggestions for task form description
+  const handleFormAiSuggest = async () => {
+    if (!title) {
+      setActionError('Please enter a task name first to get AI suggestions');
+      return;
+    }
+    setActionError('');
+    setFormAiLoading(true);
+    try {
+      const response = await authFetch(`${API_BASE_URL}/ai/suggest`, {
+        method: 'POST',
+        body: JSON.stringify({
+          title,
+          description
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch suggestions');
+      }
+
+      const formatted = data.suggestions.map(s => `- [ ] ${s.text}`).join('\n');
+      setDescription(prev => prev ? `${prev}\n\nSuggested Checklist:\n${formatted}` : `Suggested Checklist:\n${formatted}`);
+      setActionSuccess('AI suggestion appended to description');
+      setTimeout(() => setActionSuccess(''), 3000);
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setFormAiLoading(false);
+    }
+  };
   useEffect(() => {
     fetchTasks();
   }, []);
@@ -295,12 +395,22 @@ const Dashboard = () => {
             />
           </div>
           <div className="form-group" style={{ gridColumn: '1 / -1', marginTop: '1rem', marginBottom: '1rem' }}>
-            <label htmlFor="taskDescription">Task Description</label>
-            <input
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <label htmlFor="taskDescription" style={{ marginBottom: 0 }}>Task Description</label>
+              <button 
+                type="button" 
+                onClick={handleFormAiSuggest} 
+                disabled={formAiLoading}
+                className="btn-ai-assist"
+              >
+                {formAiLoading ? <Loader2 size={14} className="spin-icon" /> : <Sparkles size={14} />}
+                <span>AI Assist Checklist</span>
+              </button>
+            </div>
+            <textarea
               id="taskDescription"
-              type="text"
               className="form-input"
-              style={{ paddingLeft: '1rem' }}
+              style={{ padding: '0.75rem 1rem', minHeight: '80px', resize: 'vertical' }}
               placeholder="Additional details and notes..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -340,7 +450,51 @@ const Dashboard = () => {
                   </div>                 
                   <div className="task-details">
                     <span className="task-title">{task.title}</span>
-                    {task.description && <span className="task-desc">{task.description}</span>}
+                    {task.description && <span className="task-desc" style={{ whiteSpace: 'pre-line' }}>{task.description}</span>}
+                    
+                    {/* Render AI subtasks if present, otherwise offer Suggestion */}
+                    {task.subtasks && task.subtasks.length > 0 ? (
+                      <div className="subtask-container">
+                        <div className="subtask-title-header">
+                          <Sparkles size={14} style={{ color: '#a855f7' }} />
+                          <span>AI Subtasks Checklist</span>
+                        </div>
+                        <div style={{ display: 'grid', gap: '0.25rem', marginTop: '0.5rem' }}>
+                          {task.subtasks.map((sub, idx) => (
+                            <div 
+                              key={sub._id || idx} 
+                              className="subtask-item"
+                              onClick={() => handleToggleSubtask(task, idx)}
+                            >
+                              <input 
+                                type="checkbox" 
+                                className="subtask-checkbox"
+                                checked={sub.completed}
+                                readOnly
+                              />
+                              <span className={`subtask-text ${sub.completed ? 'completed' : ''}`}>
+                                {sub.text}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleGenerateSubtasks(task)}
+                        disabled={aiLoadingTaskId === task._id}
+                        className="ai-suggest-inline-btn"
+                      >
+                        {aiLoadingTaskId === task._id ? (
+                          <Loader2 size={14} className="spin-icon" />
+                        ) : (
+                          <Sparkles size={14} />
+                        )}
+                        <span>AI Suggest Subtasks</span>
+                      </button>
+                    )}
+
                     <div className="task-meta">
                       <span className={`priority-badge priority-${task.priority}`}>
                         {task.priority}

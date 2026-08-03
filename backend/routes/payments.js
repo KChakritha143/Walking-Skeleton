@@ -3,8 +3,11 @@ const router = express.Router();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy_key_not_configured_yet');
 const { protect } = require('../middleware/auth');
 const User = require('../models/User');
+const { validate, verifySessionSchema } = require('../middleware/validate');
+
 router.use(protect);
-router.post('/create-checkout-session', async (req, res) => {
+
+router.post('/create-checkout-session', async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) {
@@ -13,7 +16,6 @@ router.post('/create-checkout-session', async (req, res) => {
 
     const host = req.headers.origin || 'http://localhost:5173';
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.startsWith('sk_test_dummy')) {
-      console.log('Using Mock Checkout Session as Stripe secret is not configured.');
       return res.json({
         id: `mock_session_${Date.now()}`,
         url: `${host}/success?session_id=mock_session_${Date.now()}`
@@ -44,16 +46,13 @@ router.post('/create-checkout-session', async (req, res) => {
     });
     res.json({ id: session.id, url: session.url });
   } catch (error) {
-    console.error('Create checkout session error:', error);
-    res.status(500).json({ message: 'Payment gateway error', error: error.message });
+    next(error);
   }
 });
-router.post('/verify-session', async (req, res) => {
+
+router.post('/verify-session', validate(verifySessionSchema), async (req, res, next) => {
   try {
     const { sessionId } = req.body;
-    if (!sessionId) {
-      return res.status(400).json({ message: 'Session ID is required' });
-    }
     if (sessionId.startsWith('mock_session_')) {
       const user = await User.findById(req.user.id);
       if (user) {
@@ -75,8 +74,8 @@ router.post('/verify-session', async (req, res) => {
     }
     res.status(400).json({ success: false, message: 'Payment not completed or verified' });
   } catch (error) {
-    console.error('Verify session error:', error);
-    res.status(500).json({ message: 'Verification error', error: error.message });
+    next(error);
   }
 });
+
 module.exports = router;

@@ -1,0 +1,3 @@
+app.get('/api/test500', (req, res) => {
+  throw new Error('Testing 500 Error');
+});

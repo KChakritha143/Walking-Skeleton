@@ -2,17 +2,20 @@ const express = require('express');
 const router = express.Router();
 const Task = require('../models/Task');
 const { protect } = require('../middleware/auth');
+const { validate, createTaskSchema, updateTaskSchema } = require('../middleware/validate');
+
 router.use(protect);
-router.get('/', async (req, res) => {
+
+router.get('/', async (req, res, next) => {
   try {
     const tasks = await Task.find({ authorId: req.user.id }).sort({ createdAt: -1 });
     res.json(tasks);
   } catch (error) {
-    console.error('Fetch tasks error:', error);
-    res.status(500).json({ message: 'Server error while fetching tasks' });
+    next(error);
   }
 });
-router.get('/:id', async (req, res) => {
+
+router.get('/:id', async (req, res, next) => {
   try {
     const task = await Task.findById(req.params.id);
     if (!task) {
@@ -23,33 +26,33 @@ router.get('/:id', async (req, res) => {
     }
     res.json(task);
   } catch (error) {
-    console.error('Fetch single task error:', error);
-    res.status(500).json({ message: 'Server error while fetching task' });
+    next(error);
   }
 });
-router.post('/', async (req, res) => {
+
+router.post('/', validate(createTaskSchema), async (req, res, next) => {
   try {
-    const { title, description, priority, dueDate } = req.body;
-    if (!title) {
-      return res.status(400).json({ message: 'Title is required' });
-    }
+    const { title, description, priority, dueDate, subtasks } = req.body;
+    
     const newTask = new Task({
       authorId: req.user.id,
       title,
       description,
       priority,
-      dueDate
+      dueDate,
+      subtasks
     });
+
     const task = await newTask.save();
     res.status(201).json(task);
   } catch (error) {
-    console.error('Create task error:', error);
-    res.status(500).json({ message: 'Server error while creating task' });
+    next(error);
   }
 });
-router.put('/:id', async (req, res) => {
+
+router.put('/:id', validate(updateTaskSchema), async (req, res, next) => {
   try {
-    const { title, description, completed, priority, dueDate } = req.body;
+    const { title, description, completed, priority, dueDate, subtasks } = req.body;
     let task = await Task.findById(req.params.id);
     if (!task) {
       return res.status(404).json({ message: 'Task not found' });
@@ -57,12 +60,15 @@ router.put('/:id', async (req, res) => {
     if (task.authorId.toString() !== req.user.id) {
       return res.status(403).json({ message: 'User not authorized to update this task' });
     }
+
     const updateFields = {};
     if (title !== undefined) updateFields.title = title;
     if (description !== undefined) updateFields.description = description;
     if (completed !== undefined) updateFields.completed = completed;
     if (priority !== undefined) updateFields.priority = priority;
     if (dueDate !== undefined) updateFields.dueDate = dueDate;
+    if (subtasks !== undefined) updateFields.subtasks = subtasks;
+
     task = await Task.findByIdAndUpdate(
       req.params.id,
       { $set: updateFields },
@@ -70,11 +76,11 @@ router.put('/:id', async (req, res) => {
     );
     res.json(task);
   } catch (error) {
-    console.error('Update task error:', error);
-    res.status(500).json({ message: 'Server error while updating task' });
+    next(error);
   }
 });
-router.delete('/:id', async (req, res) => {
+
+router.delete('/:id', async (req, res, next) => {
   try {
     const task = await Task.findById(req.params.id);
     if (!task) {
@@ -86,8 +92,8 @@ router.delete('/:id', async (req, res) => {
     await Task.findByIdAndDelete(req.params.id);
     res.json({ message: 'Task removed successfully' });
   } catch (error) {
-    console.error('Delete task error:', error);
-    res.status(500).json({ message: 'Server error while deleting task' });
+    next(error);
   }
 });
+
 module.exports = router;

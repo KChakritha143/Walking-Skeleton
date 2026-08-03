@@ -1,25 +1,44 @@
 require('dotenv').config();
+
+// Standardize fatal crash termination early
+process.on('uncaughtException', (err) => {
+  console.error(`Uncaught Exception: ${err.message}`);
+  console.error(err.stack);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (err, promise) => {
+  console.error(`Unhandled Rejection Error: ${err.message}`);
+  if (err.stack) console.error(err.stack);
+  process.exit(1);
+});
+
 const express = require('express');
 const cors = require('cors');
 const { connectDB } = require('./config/db');
+const { generalLimiter } = require('./middleware/rateLimiter');
+
 const app = express();
 connectDB();
+
 app.use(cors({
   origin: '*', 
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+app.use(generalLimiter);
 app.use(express.json());
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-  next();
-});
+
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/payments', require('./routes/payments'));
+app.use('/api/ai', require('./routes/ai'));
+
 app.get('/api/status', (req, res) => {
   res.json({ status: 'API is running securely', time: new Date() });
 });
+
 app.get('/', (req, res) => {
   res.send(`
     <html>
@@ -46,22 +65,27 @@ app.get('/', (req, res) => {
     </html>
   `);
 });
+
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) {
     return next();
   }
   res.redirect('/');
 });
+
+app.use((req, res) => {
+  res.status(404).json({
+    message: "Route not found"
+  });
+});
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: 'Internal server error occurred' });
+  const status = res.statusCode && res.statusCode !== 200 ? res.statusCode : 500;
+  res.status(status).json({ message: err.message || 'Internal server error occurred' });
 });
-process.on('unhandledRejection', (err, promise) => {
-  console.error(`Unhandled Rejection Error: ${err.message}`);
-});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Security Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-  console.log(`Backend API URL: http://localhost:${PORT}`);
-  console.log(`Backend Status Check: http://localhost:${PORT}/api/status`);
 });
