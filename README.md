@@ -1,110 +1,330 @@
-# Task Matrix
+# TaskMatrix
 
-# REST API CRUD Finalization & Gateway Monetization
+## AI-Powered Agile Project Management Platform
 
-## Project Overview
+TaskMatrix is a modern full-stack Agile project management platform designed for software teams to efficiently plan, organize, track, and manage projects.
 
-This project is a full-stack application built using:
+The platform provides a centralized workspace where teams can collaborate, assign tasks, monitor project progress, manage deadlines, track activities, and improve productivity.
 
-- React (Vite) Frontend
-- Node.js & Express Backend
-- MongoDB Atlas Database
-- JWT Authentication
-- Bcrypt Password Hashing
-- Protected CRUD Operations
-- Stripe Checkout Integration (Test Mode)
+The project combines secure REST API architecture, JWT authentication, protected CRUD operations, ownership validation, payment gateway integration, and a server-side AI microservice to create a scalable and secure project management system.
 
-The application allows authenticated users to manage their own resources securely through JWT-protected REST APIs while demonstrating ownership validation and payment gateway integration.
+This project was developed as part of the Prodesk Residency Program under the Full Stack Development Track.
 
 ---
 
-## Tech Stack
+# Project Overview
 
-### Frontend
-- React.js
-- Vite
-- React Context API
-- Axios
-- React Router DOM
+Managing software projects across multiple team members can become challenging without a centralized platform. Teams often face difficulties with:
 
-### Backend
-- Node.js
-- Express.js
-- MongoDB Atlas
-- Mongoose
-- JWT (jsonwebtoken)
-- bcryptjs
-- CORS
-- dotenv
-- 
-## Project Structure
+* Task tracking
+* Project visibility
+* Team collaboration
+* Deadline management
+* Resource ownership
+* Productivity monitoring
+
+TaskMatrix provides an Agile project management environment where users can:
+
+* Create and manage projects
+* Assign tasks to team members
+* Track progress using Kanban boards
+* Manage priorities and deadlines
+* Collaborate through comments and activity feeds
+* Receive notifications
+* Generate AI-based task suggestions
+* Access premium features through payment integration
+
+---
+
+# Problem Statement
+
+Software teams require efficient project management tools to organize their workflow. Without a proper system, teams experience:
+
+* Poor task organization
+* Lack of ownership tracking
+* Difficulty monitoring progress
+* Communication gaps
+* Missed deadlines
+
+The goal of TaskMatrix is to provide a Jira/Asana-inspired platform that simplifies project execution and improves collaboration.
+
+---
+
+# Solution
+
+TaskMatrix solves these challenges by providing:
+
+* Secure authentication system
+* Project and task management
+* Kanban workflow management
+* Team collaboration features
+* Role-based access control
+* AI-powered assistance
+* Secure backend architecture
+* Payment-based premium access
+
+---
+
+# Technology Stack
+
+## Frontend
+
+* Next.js
+* React.js
+* Vite
+* Tailwind CSS
+* Shadcn UI
+* Zustand
+* Axios
+* React Router DOM
+
+## Backend
+
+* Node.js
+* Express.js
+* MongoDB Atlas
+* Mongoose
+* JWT Authentication
+* bcryptjs
+* dotenv
+* CORS
+
+## Validation and Security
+
+* Zod / Joi Schema Validation
+* express-rate-limit
+* Error Handling Middleware
+* Request Sanitization
+
+## AI Integration
+
+* Google Generative AI SDK / OpenAI SDK
+* Server-side AI Microservice Architecture
+
+## Payment Integration
+
+* Stripe Checkout API
+* Stripe Test Mode
+
+## Deployment
+
+Frontend:
+
+* Vercel
+
+Backend:
+
+* Render
+
+Database:
+
+* MongoDB Atlas
+
+---
+
+# System Architecture
 
 ```
-MISSION-15
+                    Frontend Application
+                  (React / Next.js)
+
+                          |
+                          |
+                       Axios API
+
+                          |
+                          |
+
+                 Node.js Express Server
+
+                          |
+        ------------------------------------
+        |              |                  |
+ Authentication    CRUD Services      AI Service
+        |              |                  |
+        |              |                  |
+       JWT        MongoDB Atlas      LLM Provider
+        |
+        |
+ Password Hashing
+    bcrypt
+
+
+                          |
+                          |
+
+                  Stripe Payment Gateway
+```
+
+---
+
+# Project Structure
+
+```
+TaskMatrix
+
 │
 ├── backend
+│
 │   ├── config
-│   ├── data
+│   ├── controllers
 │   ├── middleware
 │   ├── models
 │   ├── routes
+│   ├── services
+│   ├── validations
 │   ├── tests
-│   ├── .env
+│   │
 │   ├── server.js
+│   ├── .env
 │   └── package.json
 │
 ├── frontend
+│
 │   ├── public
 │   ├── src
-│   │   ├── assets
-│   │   ├── components
-│   │   ├── context
-│   │   ├── pages
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── index.html
-│   ├── vite.config.js
-│   └── package.json
+│   │
+│   ├── assets
+│   ├── components
+│   ├── context
+│   ├── pages
+│   ├── services
+│   ├── App.jsx
+│   └── main.jsx
+│
+├── docs
+│   └── ERD.png
+│
+├── Prompts.md
 │
 └── README.md
 ```
 
 ---
 
+# UI/UX Design
+
+The application UI was designed using Figma.
+
+Designed Screens:
+
+## Authentication Screen
+
+Includes:
+
+* Login page
+* Registration page
+* User authentication flow
+
+## Dashboard Screen
+
+Includes:
+
+* Project overview
+* Task statistics
+* Kanban board
+* Recent activities
+
+## Task Details Screen
+
+Includes:
+
+* Task information
+* Assigned members
+* Priority
+* Deadline
+* Comments
+* Activity history
+
+Figma Design Link:
+
+https://www.figma.com/design/aEGzAIjEwnSxMyi5A2zuX3/task-matrix-UI-design?node-id=3-2&p=f&t=s0Ssf3qaJ6Twatsz-0
+
+---
+
+# Authentication and Authorization
+
 ## Features
 
-### Authentication
+* User Registration
+* User Login
+* JWT Token Generation
+* Protected Routes
+* Password Hashing using bcryptjs
+* Role-Based Access Control
 
-- User Registration
-- User Login
-- JWT Token Generation
-- Protected Routes
-- Password Hashing using bcryptjs
+## Authentication Flow
 
-### Secure CRUD Operations
+```
+User Login
+
+      |
+
+Validate Credentials
+
+      |
+
+Compare Password using bcrypt
+
+      |
+
+Generate JWT Token
+
+      |
+
+Access Protected APIs
+```
+
+---
+
+# JWT Middleware
+
+Protected routes use authentication middleware.
+
+Middleware process:
+
+1. Read token from Authorization header
+2. Verify token using JWT secret
+3. Decode user information
+4. Attach user information to request
+5. Allow access to protected routes
+
+Example:
+
+```javascript
+router.get(
+"/api/tasks",
+protect,
+getTasks
+);
+```
+
+---
+
+# Secure CRUD Operations
 
 Authenticated users can:
 
-- Create Resources
-- Read Their Own Resources
-- Update Their Own Resources
-- Delete Their Own Resources
+* Create Resources
+* Read Resources
+* Update Resources
+* Delete Resources
 
-### Ownership Validation
+Each resource contains:
 
-Every resource contains:
-
-```js
+```
 authorId
 ```
 
-Before any Read, Update, or Delete operation:
+Before accessing resources:
 
-```js
-if (resource.authorId.toString() !== req.user.id) {
-    return res.status(403).json({
-        message: "Access Denied"
-    });
+```javascript
+if(resource.authorId.toString() !== req.user.id){
+
+return res.status(403).json({
+message:"Access Denied"
+});
+
 }
 ```
 
@@ -112,40 +332,239 @@ This ensures users can only access their own data.
 
 ---
 
-## REST API Endpoints
+# REST API Endpoints
 
-### Authentication
+## Authentication
 
-#### Register User
+### Register User
 
-```http
+```
 POST /api/auth/register
 ```
 
-Request Body:
+Request:
 
 ```json
 {
-  "name": "John",
-  "email": "john@example.com",
-  "password": "123456"
+"name":"John",
+"email":"john@example.com",
+"password":"123456"
+}
+```
+
+### Login User
+
+```
+POST /api/auth/login
+```
+
+Response:
+
+```json
+{
+"token":"JWT_TOKEN"
 }
 ```
 
 ---
 
-#### Login User
+# Project APIs
 
-```http
-POST /api/auth/login
+| Method | Endpoint          | Description    |
+| ------ | ----------------- | -------------- |
+| GET    | /api/projects     | Get projects   |
+| GET    | /api/projects/:id | Get project    |
+| POST   | /api/projects     | Create project |
+| PUT    | /api/projects/:id | Update project |
+| DELETE | /api/projects/:id | Delete project |
+
+---
+
+# Task APIs
+
+| Method | Endpoint       | Description     |
+| ------ | -------------- | --------------- |
+| GET    | /api/tasks     | Get tasks       |
+| GET    | /api/tasks/:id | Get single task |
+| POST   | /api/tasks     | Create task     |
+| PUT    | /api/tasks/:id | Update task     |
+| DELETE | /api/tasks/:id | Delete task     |
+
+---
+
+# Comments APIs
+
+| Method | Endpoint          | Description    |
+| ------ | ----------------- | -------------- |
+| GET    | /api/comments     | Get comments   |
+| POST   | /api/comments     | Add comment    |
+| DELETE | /api/comments/:id | Delete comment |
+
+---
+
+# Notification APIs
+
+| Method | Endpoint               | Description         |
+| ------ | ---------------------- | ------------------- |
+| GET    | /api/notifications     | Get notifications   |
+| PUT    | /api/notifications/:id | Update notification |
+
+---
+
+# Frontend Backend Integration
+
+The React/Next.js frontend communicates with backend APIs using Axios.
+
+Example:
+
+```javascript
+axios.get("/api/tasks",{
+
+headers:{
+Authorization:`Bearer ${token}`
+}
+
+});
 ```
 
-Request Body:
+---
+
+# Optimistic UI Implementation
+
+When deleting a task:
+
+1. Remove task immediately from UI state
+2. Send API request in background
+3. Update server data
+4. Avoid unnecessary page reloads
+
+Example:
+
+```javascript
+setTasks(
+tasks.filter(task=>task._id!==id)
+);
+
+await axios.delete(`/api/tasks/${id}`);
+```
+
+---
+
+# Error Handling and Payload Validation
+
+All backend controllers are protected using try/catch blocks.
+
+The API uses standardized JSON responses.
+
+Example:
 
 ```json
 {
-  "email": "john@example.com",
-  "password": "123456"
+"success":false,
+"message":"Invalid request data"
+}
+```
+
+HTTP Status Codes:
+
+| Code | Purpose               |
+| ---- | --------------------- |
+| 400  | Bad Request           |
+| 401  | Unauthorized          |
+| 403  | Forbidden             |
+| 404  | Not Found             |
+| 500  | Internal Server Error |
+
+---
+
+# Schema Validation
+
+All incoming request bodies are validated before reaching MongoDB.
+
+Example using Zod:
+
+```javascript
+const taskSchema=z.object({
+
+title:z.string().min(3),
+
+priority:z.enum([
+"Low",
+"Medium",
+"High"
+])
+
+});
+```
+
+Validation Flow:
+
+```
+Request Body
+
+      |
+
+Schema Validation
+
+      |
+
+Controller
+
+      |
+
+Database
+```
+
+---
+
+# Server-Side AI Microservice
+
+The AI integration is implemented only on the backend.
+
+The frontend never directly communicates with the AI provider.
+
+Architecture:
+
+```
+Frontend
+
+   |
+
+POST /api/ai/suggest
+
+   |
+
+Express Backend
+
+   |
+
+AI SDK
+
+   |
+
+LLM Model
+
+   |
+
+Sanitized Response
+```
+
+---
+
+# AI Suggestion Endpoint
+
+Endpoint:
+
+```
+POST /api/ai/suggest
+```
+
+Request:
+
+```json
+{
+"project":"E-commerce Application",
+"goal":"Improve customer experience"
 }
 ```
 
@@ -153,203 +572,170 @@ Response:
 
 ```json
 {
-  "token": "JWT_TOKEN"
+"suggestions":[
+"Improve checkout process",
+"Add recommendation system",
+"Optimize performance"
+]
 }
 ```
 
 ---
 
-### Resource CRUD
+# AI Security
 
-#### Create Resource
-
-```http
-POST /api/tasks
-```
-
-Headers:
-
-```http
-Authorization: Bearer TOKEN
-```
-
----
-
-#### Get All User Resources
-
-```http
-GET /api/tasks
-```
-
-Headers:
-
-```http
-Authorization: Bearer TOKEN
-```
-
----
-
-#### Get Single Resource
-
-```http
-GET /api/tasks/:id
-```
-
-Headers:
-
-```http
-Authorization: Bearer TOKEN
-```
-
----
-
-#### Update Resource
-
-```http
-PUT /api/tasks/:id
-```
-
-Headers:
-
-```http
-Authorization: Bearer TOKEN
-```
-
----
-
-#### Delete Resource
-
-```http
-DELETE /api/tasks/:id
-```
-
-Headers:
-
-```http
-Authorization: Bearer TOKEN
-```
-
----
-
-## JWT Middleware
-
-Protected routes use authentication middleware.
+AI API keys are stored securely inside environment variables.
 
 Example:
 
-```js
-router.get("/", protect, getTasks);
+```
+GOOGLE_AI_KEY=
+OPENAI_API_KEY=
 ```
 
-Middleware Flow:
-
-1. Read token from Authorization header
-2. Verify token using JWT Secret
-3. Decode user information
-4. Attach user to request object
-5. Allow access to protected route
+The keys are never exposed to the frontend.
 
 ---
 
-## Frontend Integration
+# Security Hardening
 
-The React frontend communicates with backend APIs using Axios.
+## Rate Limiting
 
-Example:
+Implemented using:
 
-```js
-axios.get("/api/tasks", {
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
+```
+express-rate-limit
 ```
 
----
+Protected endpoints:
 
-## Optimistic UI Implementation
+```
+POST /api/auth/login
 
-When a task is deleted:
-
-1. Remove task instantly from UI state.
-2. Send DELETE request in background.
-3. No page reload required.
-4. Improved user experience.
-
-Example:
-
-```js
-setTasks(tasks.filter(task => task._id !== id));
-
-await axios.delete(`/api/tasks/${id}`);
+POST /api/ai/suggest
 ```
 
----
+Benefits:
 
-## Stripe Payment Integration
-
-### Test Mode Checkout
-
-Users can initiate a Stripe checkout session.
-
-Example Use Cases:
-
-- Upgrade to Pro
-- Purchase Course
-- Premium Membership
+* Prevent brute force attacks
+* Prevent API abuse
+* Prevent AI token spam
+* Protect server resources
 
 ---
 
-### Create Checkout Session
+# Production Sanitization
 
-```http
+Before deployment:
+
+* Removed unnecessary console.log statements
+* Secured environment variables
+* Added centralized error handling
+* Improved API response consistency
+
+---
+
+# Stripe Payment Integration
+
+TaskMatrix supports premium features using Stripe Checkout.
+
+Payment Flow:
+
+```
+User clicks Upgrade
+
+        |
+
+Frontend Request
+
+        |
+
+Backend Creates Stripe Session
+
+        |
+
+Stripe Checkout
+
+        |
+
+Payment Success
+
+        |
+
+Premium Access
+```
+
+Endpoint:
+
+```
 POST /api/payment/create-checkout-session
 ```
 
 ---
 
-### Stripe Flow
+# Database Architecture
 
-1. User clicks Upgrade Button.
-2. Frontend calls Checkout API.
-3. Backend creates Stripe Session.
-4. User redirected to Stripe Checkout.
-5. Test payment processed.
-6. Redirect to Success Page.
+MongoDB Collections:
+
+```
+Users
+
+Projects
+
+Project Members
+
+Tasks
+
+Comments
+
+Notifications
+
+Activity Logs
+
+Attachments
+
+Labels
+
+Task Labels
+```
 
 ---
 
-## Environment Variables
+# Environment Variables
 
-### Backend (.env)
+Backend `.env`
 
-```env
+```
 PORT=5000
 
-MONGO_URI=your_mongodb_connection_string
+MONGO_URI=
 
-JWT_SECRET=your_jwt_secret
+JWT_SECRET=
 
-STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_SECRET_KEY=
 
-CLIENT_URL=http://localhost:5173
+GOOGLE_AI_KEY=
+
+CLIENT_URL=
 ```
 
 ---
 
-## Installation
+# Installation
 
-### Clone Repository
+## Clone Repository
 
-```bash
+```
 git clone <repository-url>
+
+cd TaskMatrix
 ```
 
 ---
 
-### Backend Setup
+# Backend Setup
 
-```bash
+```
 cd backend
 
 npm install
@@ -357,17 +743,17 @@ npm install
 npm start
 ```
 
-Server runs at:
+Backend runs:
 
-```bash
+```
 http://localhost:5000
 ```
 
 ---
 
-### Frontend Setup
+# Frontend Setup
 
-```bash
+```
 cd frontend
 
 npm install
@@ -375,87 +761,76 @@ npm install
 npm run dev
 ```
 
-Frontend runs at:
+Frontend runs:
 
-```bash
+```
 http://localhost:5173
 ```
 
 ---
 
-## Testing
+# Testing
 
-### Authentication Testing
+Testing Tools:
 
-- Register User
-- Login User
-- Verify JWT Token
+* Postman
+* MongoDB Atlas
+* Browser Testing
 
-### CRUD Testing
+Testing includes:
 
-- Create Resource
-- Read Resource
-- Update Resource
-- Delete Resource
-
-### Ownership Validation Testing
-
-- Login as User A
-- Attempt to access User B's resource
-- Verify 403 Forbidden response
+* User registration
+* User login
+* JWT validation
+* CRUD operations
+* Ownership validation
+* AI endpoint testing
+* Stripe checkout testing
 
 ---
 
-## Security Measures
+# Deployment
 
-- JWT Authentication
-- Password Hashing with bcryptjs
-- Protected API Routes
-- Ownership Validation
-- Environment Variables
-- CORS Configuration
-- MongoDB Atlas Secure Connection
+Frontend:
 
----
+https://walking-skeleton-s4bd.vercel.app/
 
-## Deployment
+Backend:
 
-### Frontend
+https://walking-skeleton-1.onrender.com
 
-Deploy using:
+Database:
 
-- Vercel
-- Netlify
-
-### Backend
-
-Deploy using:
-
-- Render
-- Railway
-
-### Database
-
-- MongoDB Atlas
+MongoDB Atlas
 
 ---
 
-## Learning Outcomes
+
+# Future Enhancements
+
+* AI Sprint Planning Assistant
+* AI Project Summary Generator
+* Smart Task Prioritization
+* Email Notifications
+* Team Performance Analytics
+* Calendar Integration
+* Mobile Application
+* Advanced Reporting Dashboard
+
+---
+
+# Learning Outcomes
 
 Through this project:
 
-- Built secure REST APIs using Express
-- Implemented JWT Authentication
-- Applied Role-Based Data Ownership
-- Connected React Frontend with Backend APIs
-- Implemented Optimistic UI Updates
-- Integrated Stripe Payment Gateway
-- Worked with MongoDB Atlas
-- Deployed Full-Stack Applications
-
----
-
-## Deployment Links
-
-- Frontend(Vercel) : https://walking-skeleton-s4bd.vercel.app/
-- Backend(Render) :  https://walking-skeleton-1.onrender.com
+* Built scalable REST APIs using Express.js
+* Implemented JWT authentication
+* Applied secure CRUD operations
+* Implemented ownership validation
+* Connected frontend and backend applications
+* Worked with MongoDB Atlas
+* Integrated Stripe payment gateway
+* Designed AI backend architecture
+* Implemented payload validation
+* Added rate limiting security
+* Deployed full-stack applications
