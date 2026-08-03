@@ -28,8 +28,8 @@ router.post('/suggest', protect, validate(aiSuggestSchema), async (req, res) => 
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    // Use the latest flash model
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    // Use a supported flash model
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `You are an expert task assistant. Generate 3 to 5 clear, actionable subtasks for a primary task.
 Primary Task Title: "${title}"
@@ -60,11 +60,13 @@ Return ONLY a raw JSON array of strings representing the subtasks, e.g. ["Resear
       }
       throw new Error('Response was not a valid array');
     } catch (parseError) {
+      console.error('Failed to parse AI suggestions response:', parseError.message, sanitizedText);
       // Fallback if parsing failed
       const suggestions = getMockSuggestions(title, description);
       return res.json({ suggestions });
     }
   } catch (error) {
+    console.error('AI Suggestion API error:', error.message || error);
     // Return mock fallback on any API errors to prevent server failures
     const suggestions = getMockSuggestions(title, description);
     return res.json({ suggestions });
