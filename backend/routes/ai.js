@@ -3,8 +3,6 @@ const router = express.Router();
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { protect } = require('../middleware/auth');
 const { validate, aiSuggestSchema } = require('../middleware/validate');
-
-// Helper to generate context-specific mock subtasks if key is missing or calls fail
 const getMockSuggestions = (title, description) => {
   return [
     { text: `Define objectives and constraints for "${title}"`, completed: false },
@@ -17,8 +15,6 @@ const getMockSuggestions = (title, description) => {
 
 router.post('/suggest', protect, validate(aiSuggestSchema), async (req, res) => {
   const { title, description } = req.body;
-
-  // Check if API key is present and configured
   const apiKey = process.env.GEMINI_API_KEY;
   console.log("Gemini Key Loaded:", !!apiKey);
   if (!apiKey || apiKey.startsWith('your_') || apiKey.startsWith('dummy_')) {
@@ -28,7 +24,6 @@ router.post('/suggest', protect, validate(aiSuggestSchema), async (req, res) => 
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    // Use a supported flash model
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `You are an expert task assistant. Generate 3 to 5 clear, actionable subtasks for a primary task.
@@ -39,8 +34,6 @@ Return ONLY a raw JSON array of strings representing the subtasks, e.g. ["Resear
 
     const result = await model.generateContent(prompt);
     const responseText = result.response.text().trim();
-
-    // Sanitize output (remove markdown code block wrappers if generated)
     let sanitizedText = responseText;
     if (sanitizedText.startsWith('```')) {
       sanitizedText = sanitizedText
@@ -61,13 +54,11 @@ Return ONLY a raw JSON array of strings representing the subtasks, e.g. ["Resear
       throw new Error('Response was not a valid array');
     } catch (parseError) {
       console.error('Failed to parse AI suggestions response:', parseError.message, sanitizedText);
-      // Fallback if parsing failed
       const suggestions = getMockSuggestions(title, description);
       return res.json({ suggestions });
     }
   } catch (error) {
     console.error('AI Suggestion API error:', error.message || error);
-    // Return mock fallback on any API errors to prevent server failures
     const suggestions = getMockSuggestions(title, description);
     return res.json({ suggestions });
   }

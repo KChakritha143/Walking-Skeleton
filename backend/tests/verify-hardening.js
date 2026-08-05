@@ -4,7 +4,6 @@ const User = require('../models/User');
 const Task = require('../models/Task');
 const { validate, registerSchema, createTaskSchema, verifySessionSchema } = require('../middleware/validate');
 
-// Set dummy environment vars for test run
 process.env.JWT_SECRET = 'test_secret_key_1234567890';
 process.env.PORT = 5002;
 
@@ -12,14 +11,12 @@ async function runTests() {
   console.log('=== STARTING SECURITY HARDENING & VALIDATION TESTS ===\n');
 
   try {
-    // 1. Initialize DB Connection
     await connectDB();
     console.log('✓ Connected to MongoDB');
 
     await User.deleteMany({});
     await Task.deleteMany({});
 
-    // 2. Test Zod Registration Validation
     console.log('\nTesting: Register Validation Schema...');
     const invalidRegReq = {
       body: {
@@ -54,12 +51,11 @@ async function runTests() {
     console.log('✓ Success: Registration validation failed with 400 Bad Request');
     console.log('  Validation errors returned:', JSON.stringify(responseJson.errors));
 
-    // 3. Test Zod Task Creation Validation
     console.log('\nTesting: Task Creation Validation Schema...');
     const invalidTaskReq = {
       body: {
-        title: '', // empty title
-        priority: 'critical' // invalid enum value
+        title: '', 
+        priority: 'critical' 
       }
     };
 
@@ -77,7 +73,6 @@ async function runTests() {
     console.log('✓ Success: Task validation failed with 400 Bad Request');
     console.log('  Validation errors returned:', JSON.stringify(responseJson.errors));
 
-    // 4. Test MongoDB Task schema with subtasks
     console.log('\nTesting: MongoDB Subtask Checklist Saving...');
     const user = new User({
       name: 'Tester',
@@ -109,7 +104,6 @@ async function runTests() {
     }
     console.log('✓ Verified subtask array retrieval and completed state!');
 
-    // 5. Test AI Suggest Mock Fallback
     console.log('\nTesting: AI suggestion endpoint helper...');
     const aiRoute = require('../routes/ai');
     
@@ -124,22 +118,18 @@ async function runTests() {
     responseStatus = null;
     responseJson = null;
 
-    // Extract the handler to invoke directly
     const suggestHandler = aiRoute.stack.find(layer => layer.route && layer.route.path === '/suggest').route.stack.slice(-1)[0].handle;
-    
     await suggestHandler(mockAiReq, mockRes, (err) => {
       if (err) throw err;
     });
-
     if (!responseJson || !responseJson.suggestions || responseJson.suggestions.length === 0) {
       throw new Error('FAIL: AI suggest handler did not return any suggestions');
     }
     console.log(`✓ Success: AI suggestions fallback returned ${responseJson.suggestions.length} items:`);
     responseJson.suggestions.forEach(s => console.log(`  - [ ] ${s.text}`));
-
-    console.log('\n=== ALL HARDENING TESTS PASSED SUCCESSFULLY ===');
+    console.log('\nALL HARDENING TESTS PASSED SUCCESSFULLY');
   } catch (error) {
-    console.error('\n❌ TEST RUN FAILED:', error.stack || error);
+    console.error('\n TEST RUN FAILED:', error.stack || error);
   } finally {
     console.log('\nDisconnecting database...');
     await disconnectDB();

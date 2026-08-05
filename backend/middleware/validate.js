@@ -1,6 +1,5 @@
 const { z } = require('zod');
 
-// Middleware wrapper for schema validation
 const validate = (schema) => {
   return (req, res, next) => {
     try {
@@ -20,8 +19,6 @@ const validate = (schema) => {
     }
   };
 };
-
-// Authentication schemas
 const registerSchema = z.object({
   name: z.string().trim().min(1, 'Name is required'),
   email: z.string().trim().email('Invalid email address'),
@@ -32,8 +29,6 @@ const loginSchema = z.object({
   email: z.string().trim().email('Invalid email address'),
   password: z.string().min(1, 'Password is required')
 });
-
-// Task schemas
 const createTaskSchema = z.object({
   title: z.string().trim().min(1, 'Title is required'),
   description: z.string().trim().optional(),
@@ -60,13 +55,9 @@ const updateTaskSchema = z.object({
     completed: z.boolean().optional()
   })).optional()
 });
-
-// Payments schema
 const verifySessionSchema = z.object({
   sessionId: z.string().min(1, 'Session ID is required')
 });
-
-// AI schema
 const aiSuggestSchema = z.object({
   title: z.string().trim().min(1, 'Task title is required for suggestions'),
   description: z.string().trim().optional()

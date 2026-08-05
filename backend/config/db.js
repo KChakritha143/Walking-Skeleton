@@ -12,7 +12,6 @@ const connectDB = async () => {
       const path = require('path');
       const fs = require('fs');
 
-      // Use a local folder inside the project to persist MongoDB files
       const dbPath = path.join(__dirname, '../data');
       if (!fs.existsSync(dbPath)) {
         fs.mkdirSync(dbPath, { recursive: true });

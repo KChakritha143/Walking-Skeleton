@@ -1,9 +1,8 @@
 const rateLimit = require('express-rate-limit');
 
-// General API Rate Limiter
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100, 
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -11,10 +10,9 @@ const generalLimiter = rateLimit({
   }
 });
 
-// Aggressive Login Rate Limiter (Prevent brute-force)
 const loginLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 5, // Limit each IP to 5 requests per minute
+  windowMs: 1 * 60 * 1000, 
+  max: 5, 
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -22,10 +20,9 @@ const loginLimiter = rateLimit({
   }
 });
 
-// Aggressive AI Suggestion Rate Limiter (Prevent token-spam/abuse)
 const aiSuggestLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 5, // Limit each IP to 5 requests per minute
+  windowMs: 1 * 60 * 1000, 
+  max: 5, 
   standardHeaders: true,
   legacyHeaders: false,
   message: {
